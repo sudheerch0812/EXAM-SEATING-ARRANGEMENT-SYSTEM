@@ -1,0 +1,14 @@
+ import java.sql.SQLException;
+ public class Main {
+ public static void main(String[] args) {
+ System.out.println("Arranging students in exam hall | JDBC demo project"); 
+ArrangementDriver arrDriver = new ArrangementDriver();
+ try {
+ arrDriver.run();
+ } catch (SQLException e) {
+ ErrorUtil.logError(e.getMessage());
+ } catch (ClassNotFoundException e) {
+ ErrorUtil.logError(e.getMessage());
+ }
+ }
+ }
