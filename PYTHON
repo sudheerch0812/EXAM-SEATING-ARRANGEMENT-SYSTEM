@@ -1,0 +1,126 @@
+import java.io.BufferedWriter; 
+import java.io.FileWriter;
+ import java.io.IOException; 
+import java.sql.ResultSet; 
+import java.sql.SQLException; 
+import java.util.HashMap; 
+import java.util.Scanner;
+ public class ArrangementDriver {
+ private DBConnector dbConnection;
+ private Scanner scanner = new Scanner(System.in);
+ private String getConnection() throws SQLException, ClassNotFoundException {
+ this.dbConnection = new DBConnector();
+ if (dbConnection.ping()){
+ return "\nConnection established"; 
+}else{
+ return "\nConnection failed";
+ }
+ }
+ public void run() throws SQLException, ClassNotFoundException {
+ while(true){
+ String option;
+ System.out.print("\n1. Connect to MYSQL database"+ 
+"\n2. Ping MYSQL server"+
+ "\n3. Arrange students in exam halls"+
+ "\n4. Exit"+
+ "\n\nChoose an option from above:"
+ );
+ option = scanner.nextLine();
+ 13
+switch (option){
+ case "1": 
+System.out.println(getConnection()); 
+break;
+ case "2":
+ if (dbConnection!=null){
+ if (dbConnection.ping()){
+ System.out.println("\nConnection status online!\n");
+ }
+ }else{
+ System.out.println("\nConnection status offline!\n");
+ }
+ break;
+ case "3":
+ if (dbConnection == null){
+ System.out.println("\nPlease connect to database(1). You can check the status by ping.(2)");
+ }else {
+ arrange();
+ }
+ break;
+ case "4": 
+dbConnection.closeConnection(); 
+System.exit(0);
+ break;
+ default:
+ System.out.println("Please select a valid option!");
+ }
+ }
+ }
+ private void arrange() throws SQLException {
+ ResultSet studentsSet = dbConnection.getStudentsResultSet(); 
+ResultSet examHallSet = dbConnection.getExamHallsResultSet(); 
+boolean nothingToArrange = true;
+ 14
+while (examHallSet.next() && studentsSet.next()) {
+ nothingToArrange = false;
+ int hallNumber = examHallSet.getInt("hall_no");
+ int hallFloor = examHallSet.getInt("hall_floor");
+ int hallCapacity = examHallSet.getInt("hall_capacity");
+ ExamHall hall = new ExamHall();
+ hall.setHallNumber(hallNumber);
+ hall.setHallFloor(hallFloor);
+ for (int i=0; i<hallCapacity; i++){
+ if (i!=0){
+ if (! studentsSet.next()){
+ break;
+ }
+ }
+ hall.addAllocation(studentsSet.getString("rollno"), studentsSet.getString("student_name"));
+ }
+ String HTMLout = getHtmlOut(hall);
+ saveHtmlToFile(HTMLout, String.valueOf(hallNumber));
+ }
+ if(nothingToArrange){
+ System.out.println("Students data is empty!");
+ }else{
+ System.out.println("Arrangement done. You can view the output in directory ./hall_allocations");
+ }}
+ private String getHtmlOut(ExamHall hall){
+ StringBuilder htmlBuilder = new StringBuilder();
+ htmlBuilder.append("<html><head><title>Hall "+hall.getHallNumber()+" | Floor :
+ "+hall.getHallFloor()+"</title></head><body><h1>Hall" + hall.getHallNumber()+ " | Floor : "
+ +hall.getHallFloor()+ "</h1><table border='1'>");
+ int count = 0;
+ HashMap<String, String> allocation = hall.getAllocation();
+ for (String rollNo : allocation.keySet()) {
+ String name = allocation.get(rollNo);
+ if (count % 4 == 0) {
+htmlBuilder.append("<tr>");
+ } htmlBuilder.append("<td>").append(rollNo).append("<br>").append(name).append("</
+ td>"); if (count % 4 == 3) {
+ htmlBuilder.append("</tr>");
+ }
+ count++;
+ }
+ if (count % 4 != 0) {
+ htmlBuilder.append("</tr>");
+ }
+ htmlBuilder.append("</table></body></html>");
+ return htmlBuilder.toString();
+ }
+ private void saveHtmlToFile(String html, String hallNo) {
+ try (BufferedWriter writer = new BufferedWriter(new FileWriter("/home/ashwa-zstch1135/My
+ projects/ExamHallArrangementJDBC/src/hall_allocations/hall_no_"+hallNo+".html"))) {
+ writer.write(html+tableCSS());
+ } catch (IOException e) {
+ ErrorUtil.logError(e.getMessage());
+ }
+ }
+ private String tableCSS (){
+ return "<style>body {font-family: Arial, sans-serif;}\n" +
+ "h1 {text-align: center;}\n" +
+ "table {width: 100%;border-collapse: collapse;margin: 20px;}\n" +
+ "table, td {border: 1px solid black;}\n" +
+ "td {padding: 10px;text-align: center;}</style>";
+ }
+ 
