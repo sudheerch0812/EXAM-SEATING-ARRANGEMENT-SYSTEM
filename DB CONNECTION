@@ -1,0 +1,127 @@
+ import java.io.FileInputStream; 
+import java.io.IOException; 
+import java.sql.*;
+ import java.util.HashMap; 
+import java.util.Properties; 
+public class DBConnector {
+ private Connection connectionObject;
+ DBConnector() throws ClassNotFoundException, SQLException 
+{ HashMap<String, String> propertiesMap = readProperties(); 
+Class.forName(propertiesMap.get("driverClassName"));
+ Connection connectionObject = DriverManager.getConnection(propertiesMap.get("url"),
+ propertiesMap.get("username"), propertiesMap.get("password"));
+ this.connectionObject = connectionObject;
+ }
+ private HashMap<String, String> readProperties(){
+ Properties properties = new Properties();
+ HashMap<String, String> propertiesMap = new HashMap<String, String>();
+ try {
+ FileInputStream fileInputStream = new FileInputStream("/home/ashwa-zstch1135/My
+ projects/ExamHallArrangementJDBC/src/MySQLConnection.properties");
+ properties.load(fileInputStream);
+ fileInputStream.close();
+ propertiesMap.put("url", properties.getProperty("database.url")); 
+propertiesMap.put("username", properties.getProperty("database.username")); 
+propertiesMap.put("password", properties.getProperty("database.password")); 
+propertiesMap.put("driverClassName", properties.getProperty("driverClassName"));
+ } catch (IOException e) {
+ ErrorUtil.logError(e.getMessage());
+ }
+ return propertiesMap;
+ }
+ 17
+public boolean ping() throws SQLException {
+ if (connectionObject != null) {
+ String pingSQL = "SELECT 1"; 
+connectionObject.createStatement().executeQuery(pingSQL); 
+return true;
+ }
+ return false;
+ }
+ public void closeConnection() throws SQLException { 
+connectionObject.close(); 
+System.out.println("Connection closed!");
+ }
+ public ResultSet getStudentsResultSet() throws SQLException 
+{ Statement statement = connectionObject.createStatement(); 
+String sqlQuery = "SELECT * FROM student_details"; 
+ResultSet resultSet = statement.executeQuery(sqlQuery); 
+return resultSet;
+ }
+ public ResultSet getExamHallsResultSet() throws SQLException 
+{ Statement statement = connectionObject.createStatement(); 
+String sqlQuery = "SELECT * FROM hall_details";
+ ResultSet resultSet = statement.executeQuery(sqlQuery); 
+return resultSet;
+ }
+ }
+ exam_allocation.sql
+ CREATE DATABASE IF NOT EXISTS exam_allocation;
+ USE exam_allocation;
+ CREATE TABLE IF NOT EXISTS student_details 
+( rollno VARCHAR(20) PRIMARY KEY, 
+student_name VARCHAR(50) NOT NULL
+ );
+ 18
+CREATE TABLE IF NOT EXISTS hall_details (
+ hall_no INT PRIMARY KEY, 
+hall_floor INT NOT NULL, 
+hall_capacity INT NOT NULL
+ );
+ INSERT INTO student_details (rollno, student_name) VALUES
+ ('SRMKTR1001', 'John Doe'), 
+('SRMKTR1002', 'Jane Smith'), 
+('SRMKTR1003', 'Alice Johnson'), 
+('SRMKTR1004', 'Bob Brown'), 
+('SRMKTR1005', 'Sarah Williams'), 
+('SRMKTR1006', 'David Lee'), 
+('SRMKTR1007', 'Ella Davis'), 
+('SRMKTR1008', 'William Harris'), 
+('SRMKTR1009', 'Olivia Martin'), 
+('SRMKTR1010', 'James Wilson'), 
+('SRMKTR1011', 'Lily Moore'), 
+('SRMKTR1012', 'Michael Clark'), 
+('SRMKTR1013', 'Sophia Turner'), 
+('SRMKTR1014', 'Robert Lewis'), 
+('SRMKTR1015', 'Ava White'), 
+('SRMKTR1016', 'Joseph Jackson'), 
+('SRMKTR1017', 'Emily Hall'), 
+('SRMKTR1018', 'Thomas Anderson'), 
+('SRMKTR1019', 'Mia Walker'), 
+('SRMKTR1020', 'Daniel Hill'), 
+('SRMKTR1021', 'Charlotte Parker'), 
+('SRMKTR1022', 'Matthew Green'), 
+('SRMKTR1023', 'Grace Adams'), 
+('SRMKTR1024', 'Andrew Baker'), 
+('SRMKTR1025', 'Chloe Wright'), 
+('SRMKTR1026', 'William Edwards'), 
+('SRMKTR1027', 'Abigail Cooper'), 
+('SRMKTR1028', 'Ethan Collins'), 
+('SRMKTR1029', 'Sophia Murphy'), 
+('SRMKTR1030', 'Liam Foster'),
+ 19
+('SRMKTR1031', 'Isabella Hayes'), 
+('SRMKTR1032', 'Christopher Stewart'), 
+('SRMKTR1033', 'Emma King'), 
+('SRMKTR1034', 'Nathan Scott'), 
+('SRMKTR1035', 'Avery Wood'), 
+('SRMKTR1036', 'Anthony Nelson'), 
+('SRMKTR1037', 'Harper Rivera'), 
+('SRMKTR1038', 'Nicholas Ward'), 
+('SRMKTR1039', 'Evelyn Rogers'), 
+('SRMKTR1040', 'David Mitchell'), 
+('SRMKTR1041', 'Addison Brooks'), 
+('SRMKTR1042', 'Joseph Bell'), 
+('SRMKTR1043', 'Natalie Gray'), 
+('SRMKTR1044', 'Jackson Jenkins'), 
+('SRMKTR1045', 'Aria Foster'), 
+('SRMKTR1046', 'Samuel Taylor'), 
+('SRMKTR1047', 'Lily Bennett'), 
+('SRMKTR1048', 'Benjamin Nelson'), 
+('SRMKTR1049', 'Zoe Johnson'), 
+('SRMKTR1050', 'Ashv');
+ INSERT INTO hall_details (hall_no, hall_floor, hall_capacity) VALUES
+ (1, 1, 16), 
+(2, 1, 20), 
+(3, 2, 10), 
+(4, 3, 4);
