@@ -1,0 +1,25 @@
+ import java.util.HashMap;
+ class ExamHall{
+ private int hallNumber; 
+private int hallFloor;
+ private HashMap<String,String> allocation = new HashMap<String,String>();
+ 20
+public int getHallNumber() {
+ return hallNumber;
+ }
+ public void setHallNumber(int hallNumber) {
+ this.hallNumber = hallNumber;
+ }
+ public int getHallFloor() {
+ return hallFloor;
+ }
+ public void setHallFloor(int hallFloor) {
+ this.hallFloor = hallFloor;
+ }
+ public HashMap<String,String> getAllocation(){
+ return this.allocation;
+ }
+ public void addAllocation(String rollNumber, String name) {
+ allocation.put(rollNumber, name);
+ }
+ }
